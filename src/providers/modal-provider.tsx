@@ -5,7 +5,7 @@ interface ModalProviderProps {
   children: React.ReactNode
 }
 
-export type ModalData = {}
+export type ModalData = Record<string, any> // Allow data to have any key-value pairs
 
 type ModalContextType = {
   data: ModalData
@@ -37,7 +37,8 @@ const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   ) => {
     if (modal) {
       if (fetchData) {
-        setData({ ...data, ...(await fetchData()) } || {})
+        const fetchedData = await fetchData()
+        setData(prevData => ({ ...prevData, ...(fetchedData || {}) }))
       }
       setShowingModal(modal)
       setIsOpen(true)
@@ -47,6 +48,7 @@ const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
   const setClose = () => {
     setIsOpen(false)
     setData({})
+    setShowingModal(null) // Clear the modal when closed
   }
 
   if (!isMounted) return null
@@ -62,7 +64,7 @@ const ModalProvider: React.FC<ModalProviderProps> = ({ children }) => {
 export const useModal = () => {
   const context = useContext(ModalContext)
   if (!context) {
-    throw new Error('useModal must be used within the modal provider')
+    throw new Error('useModal must be used within the ModalProvider')
   }
   return context
 }
