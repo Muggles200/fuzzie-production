@@ -1,19 +1,55 @@
+"use client";
+
 import { CardBody, CardContainer, CardItem } from '@/components/global/3d-card'
 import { HeroParallax } from '@/components/global/connect-parallax'
 import { ContainerScroll } from '@/components/global/container-scroll-animation'
 import { InfiniteMovingCards } from '@/components/global/infinite-moving-cards'
 import { LampComponent } from '@/components/global/lamp'
-import Navbar from '@/components/global/navbar'
-import { Button } from '@/components/ui/button'
 import { clients, products } from '@/lib/constant'
 import { CheckIcon } from 'lucide-react'
-import Image from 'next/image'
+import { Authenticator } from "@aws-amplify/ui-react";
+import AuthPage from "../components/global/authpage";
+import Navbar from "../components/global/navbar";
+import { Amplify } from 'aws-amplify'
+import outputs from "../../amplify_outputs.json";
+import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+
+Amplify.configure(outputs);
 
 export default function Home() {
+  const [showAuthPage, setShowAuthPage] = useState(false);
+  const [showSignIn, setShowSignIn] = useState("");
+
+  // Function to handle going back to "Get Started" button
+  const handleBackToGetStarted = () => {
+    setShowAuthPage(false); // Go back to the "Get Started" button
+    setShowSignIn(""); // Reset sign-in/sign-up state
+  };
+
+  // Function to handle "Sign In" button click
+  const handleSignInClick = () => {
+    setShowSignIn("signIn");
+    setShowAuthPage(true); // Show the authentication page
+  };
+
+  // Function to handle "Get Started" (Sign Up) button click
+  const handleSignUpStarted = () => {
+    setShowSignIn("signUp");
+    setShowAuthPage(true); // Show the authentication page
+  };
+
   //WIP: remove fault IMAge for home page
   return (
+  <Authenticator.Provider>
     <main className="flex items-center justify-center flex-col">
-      <Navbar />
+      <>
+        {showAuthPage ? (
+          <AuthPage onBackToGetStarted={handleBackToGetStarted} authMode={showSignIn} />
+        ) : (
+          <Navbar handleSignInClick={handleSignInClick} handleSignUpStarted={handleSignUpStarted} />
+        )}
+      </>
       <section className="h-screen w-full  bg-neutral-950 rounded-md  !overflow-visible relative flex flex-col items-center  antialiased">
         <div className="absolute inset-0  h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_10%,#000_35%,#223_100%)]"></div>
         <div className="flex flex-col mt-[-100px] md:mt-[-50px]">
@@ -192,5 +228,6 @@ export default function Home() {
         </div>
       </section>
     </main>
+  </Authenticator.Provider>
   )
 }
